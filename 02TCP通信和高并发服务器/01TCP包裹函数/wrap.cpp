@@ -65,7 +65,7 @@ again:
 	if (0 > (ret = read(fd, ptr, nbytes)))
 	{
 		if (EINTR == errno) goto again;
-		else perr_exit("read error");
+		else return -1;
 	}
 	return ret;
 }
@@ -78,7 +78,7 @@ again:
 	if (0 > (ret = write(fd, ptr, nbytes)))
 	{
 		if (EINTR == errno) goto again;
-		else perr_exit("write error");
+		else return -1;
 	}
 	return ret;
 }
