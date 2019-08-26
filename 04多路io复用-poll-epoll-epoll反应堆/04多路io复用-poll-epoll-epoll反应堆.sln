@@ -9,6 +9,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "02.1epoll用于读写管道
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "02.2epoll用于读写管道", "02.2epoll用于读写管道\02.2epoll用于读写管道.vcxproj", "{2EC9A2FD-F54E-40E9-9158-B1ECFD933D1C}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "03epoll服务器测试", "03epoll服务器测试\03epoll服务器测试.vcxproj", "{313672E4-27B9-4653-8EC5-D8E981C3A3B8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM = Debug|ARM
@@ -69,6 +71,22 @@ Global
 		{2EC9A2FD-F54E-40E9-9158-B1ECFD933D1C}.Release|x64.Build.0 = Release|x64
 		{2EC9A2FD-F54E-40E9-9158-B1ECFD933D1C}.Release|x86.ActiveCfg = Release|x86
 		{2EC9A2FD-F54E-40E9-9158-B1ECFD933D1C}.Release|x86.Build.0 = Release|x86
+		{313672E4-27B9-4653-8EC5-D8E981C3A3B8}.Debug|ARM.ActiveCfg = Debug|ARM
+		{313672E4-27B9-4653-8EC5-D8E981C3A3B8}.Debug|ARM.Build.0 = Debug|ARM
+		{313672E4-27B9-4653-8EC5-D8E981C3A3B8}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{313672E4-27B9-4653-8EC5-D8E981C3A3B8}.Debug|ARM64.Build.0 = Debug|ARM64
+		{313672E4-27B9-4653-8EC5-D8E981C3A3B8}.Debug|x64.ActiveCfg = Debug|x64
+		{313672E4-27B9-4653-8EC5-D8E981C3A3B8}.Debug|x64.Build.0 = Debug|x64
+		{313672E4-27B9-4653-8EC5-D8E981C3A3B8}.Debug|x86.ActiveCfg = Debug|x86
+		{313672E4-27B9-4653-8EC5-D8E981C3A3B8}.Debug|x86.Build.0 = Debug|x86
+		{313672E4-27B9-4653-8EC5-D8E981C3A3B8}.Release|ARM.ActiveCfg = Release|ARM
+		{313672E4-27B9-4653-8EC5-D8E981C3A3B8}.Release|ARM.Build.0 = Release|ARM
+		{313672E4-27B9-4653-8EC5-D8E981C3A3B8}.Release|ARM64.ActiveCfg = Release|ARM64
+		{313672E4-27B9-4653-8EC5-D8E981C3A3B8}.Release|ARM64.Build.0 = Release|ARM64
+		{313672E4-27B9-4653-8EC5-D8E981C3A3B8}.Release|x64.ActiveCfg = Release|x64
+		{313672E4-27B9-4653-8EC5-D8E981C3A3B8}.Release|x64.Build.0 = Release|x64
+		{313672E4-27B9-4653-8EC5-D8E981C3A3B8}.Release|x86.ActiveCfg = Release|x86
+		{313672E4-27B9-4653-8EC5-D8E981C3A3B8}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
