@@ -13,6 +13,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "03epoll服务器测试", "0
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "04压测", "04压测\04压测.vcxproj", "{200C2DBA-7CBC-4212-BE05-986FDC7A3F0D}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "05epoll边缘触发", "05epoll边缘触发\05epoll边缘触发.vcxproj", "{FCA10C64-8976-477A-91FF-ADC4DC3F6A06}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM = Debug|ARM
@@ -105,6 +107,22 @@ Global
 		{200C2DBA-7CBC-4212-BE05-986FDC7A3F0D}.Release|x64.Build.0 = Release|x64
 		{200C2DBA-7CBC-4212-BE05-986FDC7A3F0D}.Release|x86.ActiveCfg = Release|x86
 		{200C2DBA-7CBC-4212-BE05-986FDC7A3F0D}.Release|x86.Build.0 = Release|x86
+		{FCA10C64-8976-477A-91FF-ADC4DC3F6A06}.Debug|ARM.ActiveCfg = Debug|ARM
+		{FCA10C64-8976-477A-91FF-ADC4DC3F6A06}.Debug|ARM.Build.0 = Debug|ARM
+		{FCA10C64-8976-477A-91FF-ADC4DC3F6A06}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{FCA10C64-8976-477A-91FF-ADC4DC3F6A06}.Debug|ARM64.Build.0 = Debug|ARM64
+		{FCA10C64-8976-477A-91FF-ADC4DC3F6A06}.Debug|x64.ActiveCfg = Debug|x64
+		{FCA10C64-8976-477A-91FF-ADC4DC3F6A06}.Debug|x64.Build.0 = Debug|x64
+		{FCA10C64-8976-477A-91FF-ADC4DC3F6A06}.Debug|x86.ActiveCfg = Debug|x86
+		{FCA10C64-8976-477A-91FF-ADC4DC3F6A06}.Debug|x86.Build.0 = Debug|x86
+		{FCA10C64-8976-477A-91FF-ADC4DC3F6A06}.Release|ARM.ActiveCfg = Release|ARM
+		{FCA10C64-8976-477A-91FF-ADC4DC3F6A06}.Release|ARM.Build.0 = Release|ARM
+		{FCA10C64-8976-477A-91FF-ADC4DC3F6A06}.Release|ARM64.ActiveCfg = Release|ARM64
+		{FCA10C64-8976-477A-91FF-ADC4DC3F6A06}.Release|ARM64.Build.0 = Release|ARM64
+		{FCA10C64-8976-477A-91FF-ADC4DC3F6A06}.Release|x64.ActiveCfg = Release|x64
+		{FCA10C64-8976-477A-91FF-ADC4DC3F6A06}.Release|x64.Build.0 = Release|x64
+		{FCA10C64-8976-477A-91FF-ADC4DC3F6A06}.Release|x86.ActiveCfg = Release|x86
+		{FCA10C64-8976-477A-91FF-ADC4DC3F6A06}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
