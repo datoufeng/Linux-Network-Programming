@@ -9,35 +9,60 @@
 
 using namespace std;
 
+void pX(void* x, int size)
+{
+	for (int i = 0; i < size; i++)
+	{
+		printf("%02X ", ((unsigned char*)x)[i]);
+	}
+	cout << endl;
+}
+
 struct EpollFd
 {
+	EpollFd(const int& fd) : fd(fd) 
+	{
+
+	}
 	EpollFd(const int& fd, const sockaddr_in& sa) : fd(fd)
 	{
-		ipport = ((uint64_t)ntohl(sa.sin_addr.s_addr)) << 4 | ntohs(sa.sin_port);
+		//ipport = ((uint64_t)ntohl(sa.sin_addr.s_addr)) << 4 | (uint16_t)ntohs(sa.sin_port);
+		for (int i = 0; i < 4; i++)ipport[i] = (sa.sin_addr.s_addr >> (i * 8)) & 0xff;
+		uint16_t port = ntohs(sa.sin_port);
+		memcpy(ipport + 4, &port, 2);
+		//pX((void*)&(sa.sin_addr.s_addr), 4);
 	}
 	int fd;
-	uint64_t ipport;
+	unsigned char ipport[6];
 
 	void pIP()
 	{
 		cout << "[" << fd << "]";
-		uint32_t ip = ipport >> 4;
-		uint16_t port = ipport & 0xffff;
-		for (int i = 3; i >= 0; i--)
+		uint16_t* port = (uint16_t*)(ipport + 4);
+		for (int i = 0; i < 4; i++)
 		{
-			cout << ((ip >> (i * 8)) & 0xff);
-			if (0 != i) cout << ".";
-			else cout << ":";
+			cout << (uint16_t)ipport[i];
+			i == 3 ? cout << ':' : cout << '.';
 		}
-		cout << port << endl;
+		cout << *port << endl;
+		//cout << "port " << endl;
+		//pX(port, sizeof(*port));
+		//cout << "ipport " << endl;
+		//pX(&ipport, sizeof(ipport));
+
+	}
+	bool operator==(const EpollFd& ef)
+	{
+		//cout << "operator==" << endl;
+		return fd == ef.fd;
 	}
 };
 
 int main()
 {
 	epoll_event event, *events;
-	int size = 0, capacity = 32;
-	list<int> listFd;
+	//int size = 0, capacity = 32;
+	list<EpollFd> listFd;
 	event.events = EPOLLIN;
 
 	int epollFd = epoll_create(32);
@@ -45,7 +70,7 @@ int main()
 	event.data.fd = STDIN_FILENO;
 	epoll_ctl(epollFd, EPOLL_CTL_ADD, STDIN_FILENO, &event);
 	//listFd.push_back(STDIN_FILENO);
-	++size;
+	//++size;
 
 	int lstnFd = socket(AF_INET, SOCK_STREAM, 0);
 	int opt = 1;
@@ -54,7 +79,7 @@ int main()
 	event.data.fd = lstnFd;
 	epoll_ctl(epollFd, EPOLL_CTL_ADD, lstnFd, &event);
 	//vctrFd.push_back(lstnFd);
-	++size;
+	//++size;
 
 	sockaddr_in sa;
 	sa.sin_family = AF_INET;
@@ -65,11 +90,11 @@ int main()
 
 	listen(lstnFd, 32);
 
-	events = (epoll_event*)malloc(sizeof(event) * capacity);
+	events = (epoll_event*)malloc(sizeof(event) * 64);
 
 	while (true)
 	{
-		int flag = epoll_wait(epollFd, events, size, 5000);
+		int flag = epoll_wait(epollFd, events, 64, 5000);
 		switch (flag)
 		{
 		case -1:
@@ -89,33 +114,29 @@ int main()
 					fgets(buf, sizeof(buf) - 1, stdin);
 					if ('\n' == buf[strlen(buf) - 1])
 						buf[strlen(buf) - 1] = 0;
-					for (int fd : listFd)
+					for (EpollFd efd : listFd)
 					{
-						send(fd, buf, strlen(buf) + 1, 0);
+						send(efd.fd, buf, strlen(buf) + 1, 0);
 					}
 				}
 				else if (lstnFd == events[i].data.fd)
 				{
-					cout << "lstnFd : " << lstnFd << endl;
 					char bufIP[INET_ADDRSTRLEN];
 					sockaddr_in sa;
 					memset(&sa, 0, sizeof(sa));
 					socklen_t saLen = sizeof(sa);
 					int connFd = accept(lstnFd, (struct sockaddr*)&sa, &saLen);
-					if (-1 == connFd) perror("accept err");
-					cout << "saLen" << saLen << endl;
-					cout << "connFd" << connFd << endl;
-					uint32_t ip = sa.sin_addr.s_addr;
-					cout << "ip" << ip << endl;
-					cout <<  "port" << sa.sin_port << endl;
-					listFd.push_back(connFd);
+					if (-1 == connFd)
+					{
+						perror("accept err");
+						goto err1;
+					}
 					event.data.fd = connFd;
 					epoll_ctl(epollFd, EPOLL_CTL_ADD, connFd, &event);
-					++size;
-					inet_ntop(AF_INET, &ip, bufIP, saLen);
 					EpollFd ef(connFd, sa);
+					listFd.push_back(ef);
+					cout << listFd.size() << endl;
 					ef.pIP();
-					cout << "[" << listFd.size() << "]" << bufIP << ":" << ntohs(sa.sin_port) << endl;
 				}
 				else
 				{
@@ -128,10 +149,11 @@ int main()
 						goto err1;
 					case 0:
 						cout << "close connect" << endl;
+						
 						listFd.remove(events[i].data.fd);
 						event.data.fd = events[i].data.fd;
 						epoll_ctl(epollFd, EPOLL_CTL_DEL, events[i].data.fd, &event);
-						--size;
+						close(events[i].data.fd);
 						break;
 					default:
 						if ('\n' == buf[n - 1])
