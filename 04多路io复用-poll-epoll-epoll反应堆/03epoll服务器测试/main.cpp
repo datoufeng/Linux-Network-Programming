@@ -9,6 +9,30 @@
 
 using namespace std;
 
+struct EpollFd
+{
+	EpollFd(const int& fd, const sockaddr_in& sa) : fd(fd)
+	{
+		ipport = ((uint64_t)ntohl(sa.sin_addr.s_addr)) << 4 | ntohs(sa.sin_port);
+	}
+	int fd;
+	uint64_t ipport;
+
+	void pIP()
+	{
+		cout << "[" << fd << "]";
+		uint32_t ip = ipport >> 4;
+		uint16_t port = ipport & 0xffff;
+		for (int i = 3; i >= 0; i--)
+		{
+			cout << ((ip >> (i * 8)) & 0xff);
+			if (0 != i) cout << ".";
+			else cout << ":";
+		}
+		cout << port << endl;
+	}
+};
+
 int main()
 {
 	epoll_event event, *events;
@@ -55,8 +79,10 @@ int main()
 			cout << "epoll_wait is timeout" << endl;
 			break;
 		default:
+			cout << "flag : " << flag << endl;
 			for (int i = 0; i < flag; i++)
 			{
+				//cout << "fd : " << events[i].data.fd << endl;
 				if (STDIN_FILENO == events[i].data.fd)
 				{
 					char buf[64] = { 0 };
@@ -70,15 +96,25 @@ int main()
 				}
 				else if (lstnFd == events[i].data.fd)
 				{
+					cout << "lstnFd : " << lstnFd << endl;
 					char bufIP[INET_ADDRSTRLEN];
 					sockaddr_in sa;
-					socklen_t saLen;
-					int connFd = accept(lstnFd, (sockaddr*)&sa, &saLen);
+					memset(&sa, 0, sizeof(sa));
+					socklen_t saLen = sizeof(sa);
+					int connFd = accept(lstnFd, (struct sockaddr*)&sa, &saLen);
+					if (-1 == connFd) perror("accept err");
+					cout << "saLen" << saLen << endl;
+					cout << "connFd" << connFd << endl;
+					uint32_t ip = sa.sin_addr.s_addr;
+					cout << "ip" << ip << endl;
+					cout <<  "port" << sa.sin_port << endl;
 					listFd.push_back(connFd);
 					event.data.fd = connFd;
 					epoll_ctl(epollFd, EPOLL_CTL_ADD, connFd, &event);
 					++size;
-					inet_ntop(AF_INET, &sa, bufIP, saLen);
+					inet_ntop(AF_INET, &ip, bufIP, saLen);
+					EpollFd ef(connFd, sa);
+					ef.pIP();
 					cout << "[" << listFd.size() << "]" << bufIP << ":" << ntohs(sa.sin_port) << endl;
 				}
 				else
