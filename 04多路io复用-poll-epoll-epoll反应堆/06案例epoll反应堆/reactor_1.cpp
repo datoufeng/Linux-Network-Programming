@@ -144,7 +144,7 @@ int main(int argc,char *argv[])
 	//°ó¶¨
     struct sockaddr_in servaddr;
     servaddr.sin_family = AF_INET;
-    servaddr.sin_port = htons(8888);
+    servaddr.sin_port = htons(8080);
     servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
     Bind(lfd,(struct sockaddr*)&servaddr,sizeof(servaddr));
     
