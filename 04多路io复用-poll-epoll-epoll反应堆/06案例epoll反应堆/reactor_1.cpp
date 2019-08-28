@@ -84,7 +84,7 @@ void senddata(int fd,int events,void *arg)
 {
     printf("begin call %s\n",__FUNCTION__);
 
-    xevent *ev = arg;
+    xevent *ev = (xevent*)arg;
     Write(fd,ev->buf,ev->buflen);
     eventset(fd,EPOLLIN,readData,arg,ev);
 }
@@ -93,7 +93,7 @@ void senddata(int fd,int events,void *arg)
 void readData(int fd,int events,void *arg)
 {
     printf("begin call %s\n",__FUNCTION__);
-    xevent *ev = arg;
+    xevent *ev = (xevent*)arg;
 
     ev->buflen = Read(fd,ev->buf,sizeof(ev->buf));
     if(ev->buflen>0) //读到数据
@@ -174,7 +174,7 @@ int main(int argc,char *argv[])
             int i = 0;
             for(i=0;i<nready; i++)
 			{
-                xevent *xe = events[i].data.ptr;//取ptr指向结构体地址
+                xevent *xe = (xevent*)events[i].data.ptr;//取ptr指向结构体地址
                 printf("fd=%d\n",xe->fd);
 
                 if(xe->events & events[i].events)

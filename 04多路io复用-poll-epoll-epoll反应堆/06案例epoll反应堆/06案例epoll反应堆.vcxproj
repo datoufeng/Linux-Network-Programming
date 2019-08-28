@@ -81,7 +81,7 @@
     <TargetExt />
   </PropertyGroup>
   <ItemGroup>
-    <ClCompile Include="reactor_1.c" />
+    <ClCompile Include="reactor_1.cpp" />
     <ClCompile Include="wrap.cpp" />
   </ItemGroup>
   <ItemGroup>

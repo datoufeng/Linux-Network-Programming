@@ -57,7 +57,7 @@ int Socket(int family, int type, int protocol)
 	return ret;
 }
 
-int Read(int fd, void * ptr, size_t nbytes)
+int Read(int fd, void * ptr, unsigned int nbytes)
 {
 	int ret;
 again:
