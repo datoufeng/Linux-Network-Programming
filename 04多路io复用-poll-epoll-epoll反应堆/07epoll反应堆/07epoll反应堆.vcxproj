@@ -82,9 +82,12 @@
   </PropertyGroup>
   <ItemGroup>
     <ClInclude Include="Reactor.h" />
+    <ClInclude Include="wrap.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="main.cpp" />
     <ClCompile Include="Reactor.cpp" />
+    <ClCompile Include="wrap.cpp" />
   </ItemGroup>
   <ItemDefinitionGroup />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
