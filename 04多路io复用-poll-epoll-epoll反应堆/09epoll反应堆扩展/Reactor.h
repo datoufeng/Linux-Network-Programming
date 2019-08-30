@@ -37,7 +37,7 @@ public:
 	~EpollReactor();
 
 	__Event* checkEvent(const int& fd); 
-	void Run();
+	void run();
 
 	int listen(const int& port);
 

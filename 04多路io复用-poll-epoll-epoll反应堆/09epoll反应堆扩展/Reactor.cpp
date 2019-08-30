@@ -72,7 +72,7 @@ EpollReactor::__Event * EpollReactor::checkEvent(const int & fd)
 	return &it->second;
 }
 
-void EpollReactor::Run()
+void EpollReactor::run()
 {
 	#ifdef __DEBUG
 	cout << __FUNCTION__ << endl;

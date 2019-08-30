@@ -7,8 +7,7 @@ int main()
 	EpollReactor er(128);
 	er.listen(8080);
 
-	er.Run();
-
+	er.run();
 
 	return 0;
 }
