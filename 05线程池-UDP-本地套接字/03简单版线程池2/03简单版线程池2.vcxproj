@@ -59,6 +59,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <UseDebugLibraries>true</UseDebugLibraries>
+    <RemoteRootDir>~/c++/07linux网络编程/05线程池-UDP-本地套接字</RemoteRootDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <UseDebugLibraries>false</UseDebugLibraries>
@@ -74,9 +75,23 @@
   <ImportGroup Label="Shared" />
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>$(ProjectDir)bin\</OutDir>
+    <IntDir>$(ProjectDir)obj\</IntDir>
+    <TargetExt />
+  </PropertyGroup>
   <ItemGroup>
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="ThreadLoop.cpp" />
   </ItemGroup>
-  <ItemDefinitionGroup />
+  <ItemGroup>
+    <ClInclude Include="ThreadLoop.h" />
+  </ItemGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Link>
+      <LibraryDependencies>pthread</LibraryDependencies>
+    </Link>
+  </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
 </Project>
