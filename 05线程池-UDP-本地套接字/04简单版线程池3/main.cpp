@@ -9,7 +9,7 @@ void proc(void* arg)
 {
 	//cout << (char*)arg << endl;
 	int i = rand() % 5;
-	cout << "delay : " << i << endl;
+	//cout << "delay : " << i << endl;
 	sleep(i);
 }
 
