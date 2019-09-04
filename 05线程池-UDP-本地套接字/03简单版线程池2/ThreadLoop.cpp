@@ -1,5 +1,7 @@
 #include "ThreadLoop.h"
+#include <string.h>
 #include <pthread.h>
+#include <unistd.h>
 #include <iostream>
 
 //#define __DEBUG
@@ -38,11 +40,13 @@ ThreadLoop::ThreadLoop(const int &thrNum, const int & maxTskNum)
 
 	thrInfo->thrArr = (pthread_t*)malloc(sizeof(pthread_t) * thrInfo->thrNum);
 	thrInfo->taskArr = (__Task**)malloc(sizeof(__Task*) * thrInfo->maxTskNum);
+	memset(thrInfo->thrArr, 0, sizeof(pthread_t) * thrInfo->thrNum);
+	memset(thrInfo->taskArr, 0, sizeof(__Task*) * thrInfo->maxTskNum);
 
 	thrInfo->isClose = 0;
 	thrInfo->jobWaiting = 0;
 	
-	thrInfo->jobThrNum = 0;
+	//thrInfo->jobThrNum = 0;
 
 	thrInfo->taskNum = 0;
 	thrInfo->taskBeg = 0;
@@ -59,7 +63,6 @@ ThreadLoop::ThreadLoop(const int &thrNum, const int & maxTskNum)
 	for (int i = 0; i < thrInfo->thrNum; i++)
 	{
 		pthread_create(thrInfo->thrArr + i, &thrAttr, thrProc, thrInfo);
-		
 	}
 }
 
@@ -80,35 +83,31 @@ ThreadLoop::~ThreadLoop()
 	free(thrInfo);
 }
 
-void ThreadLoop::addTask(void (*const & thrProc)(void *), void* const& arg)
+void ThreadLoop::addTask(void (*const & thrProc)(pthread_t, TaskId, void *), void* const& arg)
 {
 #ifdef __DEBUG
 	cout << __FUNCTION__ << endl;
 #endif // __DEBUG
 
-	
-	//cout << thrInfo->maxTskNum << "<=" << thrInfo->taskNum << endl;
-	while (thrInfo->maxTskNum <= thrInfo->taskNum || 
-		thrInfo->thrNum <= thrInfo->jobThrNum ||
-		0 >= thrInfo->jobWaiting)
+	while (thrInfo->maxTskNum <= thrInfo->taskNum)
 	{
 		pthread_cond_wait(&thrInfo->emptyThrLoop, &thrInfo->condMutex);
 	}
-	pthread_mutex_lock(&thrInfo->thrMutex);
-	//cout << "wait OK" << endl;
-	++thrInfo->jobThrNum;
-	--thrInfo->jobWaiting;
 	__Task* task = (__Task*)malloc(sizeof(__Task));
 	task->id = taskId++;
 	task->proc = thrProc;
 	task->arg = arg;
 
-	thrInfo->taskArr[thrInfo->taskNum++] = task;
+	pthread_mutex_lock(&thrInfo->thrMutex);
+
+	int pos = (thrInfo->taskBeg + thrInfo->taskNum) % thrInfo->maxTskNum;
+	thrInfo->taskArr[pos] = task;
+	++thrInfo->taskNum;
 
 	pthread_mutex_unlock(&thrInfo->thrMutex);
-	pthread_cond_signal(&thrInfo->noEmptyThrLoop);
 
-	//cout << "addTask OK" << endl;
+	if (0 < thrInfo->jobWaiting && 0 < thrInfo->taskNum)
+		pthread_cond_signal(&thrInfo->noEmptyThrLoop);
 }
 
 void ThreadLoop::delTask(void (*const & thrProc)(void *), void* const& arg)
@@ -125,57 +124,51 @@ void * ThreadLoop::thrProc(void * arg)
 	cout << __FUNCTION__ << endl;
 #endif // __DEBUG
 
+	//cout << pthread_self() << endl;
+	
 	__ThreadInfo* thrInfo = (__ThreadInfo*)arg;
+
+	pthread_mutex_lock(&thrInfo->thrMutex);
 	++thrInfo->jobWaiting;
-	if (thrInfo->jobWaiting == thrInfo->thrNum)
-		pthread_cond_signal(&thrInfo->emptyThrLoop);
+	pthread_mutex_unlock(&thrInfo->thrMutex);
 
 	while (true)
 	{
-		//cout << "lock ok" << endl;
+		__Task* task;
 		while (0 >= thrInfo->taskNum && !thrInfo->isClose)
 		{
+			char buf[128] = { 0 };
+			sprintf(buf, "[%u]%u\n", pthread_self(), thrInfo->taskNum);
+			write(STDOUT_FILENO, buf, strlen(buf));
 			pthread_cond_wait(&thrInfo->noEmptyThrLoop, &thrInfo->condMutex);
 		}
-		cout << "wait OK" << endl;
 		pthread_mutex_lock(&thrInfo->thrMutex);
-		//cout << "deal task" << endl;
-		//while (0 == thrInfo->taskNum)
-		//{
-		//	pthread_cond_wait(&thrInfo->emptyThrLoop, &thrInfo->thrMutex);
-		//}
-		int taskTmp;
+
+		--thrInfo->jobWaiting;
 		if (thrInfo->taskNum)
 		{
-			__DEBUGP(thrInfo->isClose);
-			__DEBUGP(thrInfo->jobWaiting);
-			__DEBUGP(thrInfo->jobThrNum);
-			__DEBUGP(thrInfo->taskNum);
-			__DEBUGP(thrInfo->taskBeg);
-			//--thrInfo->jobWaiting;
+			task = thrInfo->taskArr[thrInfo->taskBeg];
+			thrInfo->taskArr[thrInfo->taskBeg] = 0;
+			thrInfo->taskBeg =
+				(thrInfo->maxTskNum + thrInfo->taskBeg + 1) % 
+				thrInfo->maxTskNum;
 			--thrInfo->taskNum;
-			taskTmp = thrInfo->taskBeg;
-			//__Task* task = thrInfo->taskArr[thrInfo->taskBeg];
-			//cout << "task running : " << task->id << endl;
-			//task->proc(task->arg);
-
-			thrInfo->taskBeg = (thrInfo->taskBeg + 1) % thrInfo->maxTskNum;
-			
 		}
-
-		if (1 == thrInfo->isClose)
+		if (thrInfo->isClose)
 		{
 			pthread_exit(NULL);
 		}
-		pthread_mutex_unlock(&thrInfo->thrMutex);
-		__Task* task = thrInfo->taskArr[taskTmp];
-		
-		cout << "task running : " << task->id << endl;
-		task->proc(task->arg);
-		--thrInfo->jobThrNum;
 		++thrInfo->jobWaiting;
-		cout << "task completed : " << task->id << endl;
+		pthread_mutex_unlock(&thrInfo->thrMutex);
+
+		task->proc(pthread_self(), task->id, task->arg);
+		free(task);
+
+		//if (thrInfo->maxTskNum <= thrInfo->thrNum)
 		pthread_cond_signal(&thrInfo->emptyThrLoop);
+
+		if (0 < thrInfo->jobWaiting && 0 < thrInfo->taskNum)
+			pthread_cond_signal(&thrInfo->noEmptyThrLoop);
 	}
 
 	return nullptr;

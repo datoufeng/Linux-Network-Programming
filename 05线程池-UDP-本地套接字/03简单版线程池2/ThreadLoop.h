@@ -1,15 +1,15 @@
 #pragma once
 #include <iostream>
 
+typedef unsigned long TaskId;
 class ThreadLoop
 {
-	typedef unsigned long TaskId;
 
 	struct __Task
 	{
 		TaskId id;
 		void* arg;
-		void (*proc)(void*);
+		void (*proc)(pthread_t, TaskId, void*);
 	};
 
 	struct __ThreadInfo
@@ -23,7 +23,7 @@ class ThreadLoop
 		int isClose;
 		int jobWaiting;
 
-		int jobThrNum;
+		//int jobThrNum;
 
 		int taskNum;
 		int taskBeg;
@@ -39,7 +39,7 @@ public:
 		const int & maxThrNum = defaultMaxThrNum);
 	~ThreadLoop();
 
-	void addTask(void (*const &thrProc)(void*), void* const& arg);
+	void addTask(void (*const &thrProc)(pthread_t, TaskId, void*), void* const& arg);
 	void delTask(void (*const &thrProc)(void*), void* const& arg);
 	__ThreadInfo *thrInfo = NULL;
 private:
