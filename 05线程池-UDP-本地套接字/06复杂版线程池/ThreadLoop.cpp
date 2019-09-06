@@ -142,6 +142,7 @@ void * ThreadLoop::thrProc(void * arg)
 			pthread_mutex_unlock(&thrInfo->thrMutex);
 			cout << "unlock ok" << endl;
 			pthread_cond_wait(&thrInfo->notEmpty, &thrInfo->condMutex);
+			usleep(1);
 			cout << "wait ok" << endl;
 			pthread_mutex_lock(&thrInfo->thrMutex);
 			cout << "lock ok" << endl;
