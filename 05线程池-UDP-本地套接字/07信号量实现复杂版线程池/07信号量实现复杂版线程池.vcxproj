@@ -81,6 +81,11 @@
     <TargetExt />
   </PropertyGroup>
   <ItemGroup>
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="ThreadLoop.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ThreadLoop.h" />
   </ItemGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Link>

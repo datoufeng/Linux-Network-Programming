@@ -1,13 +1,10 @@
 #include <string.h>
-#include <pthread.h>
-
 #include <unistd.h>
 
 #include "ThreadLoop.h"
 
 //#define __DEBUG
 #define __PDEBUG(X) printf(#X" : %u\n", X)
-
 
 using namespace std;
 
@@ -18,12 +15,13 @@ ThreadLoop::ThreadLoop(
 {
 #ifdef __DEBUG
 	cout << __FUNCTION__ << endl;
-#endif // __DEBUG
-
+#endif // __DEBUG]
+	
 	thrInfo = (__ThreadInfo*)malloc(sizeof(__ThreadInfo));
 	initTskThr(minThrNum, maxThrNum, maxTskNum);
 
 	thrInfo->jobThrNum = 0;
+	thrInfo->varyThrNum = 0;
 	thrInfo->thrNum = (thrInfo->minThrNum + thrInfo->maxThrNum) / 2;
 	
 	thrInfo->firstTskNum = 0;
@@ -37,23 +35,24 @@ ThreadLoop::ThreadLoop(
 	pthread_mutex_init(&thrInfo->condMutex, NULL);
 	//pthread_mutex_init(&thrInfo->notFullCondMutex, NULL);
 	//pthread_mutex_init(&thrInfo->notEmptyCondMutex, NULL);
-	pthread_cond_init(&thrInfo->notFull, NULL);
-	pthread_cond_init(&thrInfo->notEmpty, NULL);
+	//pthread_cond_init(&thrInfo->notFull, NULL);
+	//pthread_cond_init(&thrInfo->notEmpty, NULL);
+	pthread_cond_init(&thrInfo->closed, NULL);
+	sem_init(&thrInfo->tskSem, 0, thrInfo->tskNum);
+	sem_init(&thrInfo->maxTskSem, 0, thrInfo->maxTskNum);
 
 	thrInfo->tskArr = (__Task**)malloc(sizeof(__Task*));
 	thrInfo->thrArr = (pthread_t*)malloc(sizeof(pthread_t));
 
-	pthread_attr_t thrAttr;
-	pthread_attr_init(&thrAttr);
-	pthread_attr_setdetachstate(&thrAttr, PTHREAD_CREATE_DETACHED);
+	pthread_attr_init(&thrInfo->thrAttr);
+	pthread_attr_setdetachstate(&thrInfo->thrAttr, PTHREAD_CREATE_DETACHED);
 
-	pthread_create(&thrInfo->ctrlThr, &thrAttr, ctrlThrProc, thrInfo);
+	pthread_create(&thrInfo->ctrlThr, &thrInfo->thrAttr, ctrlThrProc, thrInfo);
 	for (int i = 0; i < thrInfo->thrNum; i++)
 	{
-		pthread_create(thrInfo->thrArr + i, &thrAttr, thrProc, thrInfo);
+		pthread_create(thrInfo->thrArr + i, &thrInfo->thrAttr, thrProc, thrInfo);
 	}
 
-	pthread_attr_destroy(&thrAttr);
 }
 
 
@@ -63,14 +62,23 @@ ThreadLoop::~ThreadLoop()
 	cout << __FUNCTION__ << endl;
 #endif // __DEBUG
 
+	if (false == thrInfo->isClose) thrInfo->isClose = true;
 
 	while (false == thrInfo->thrClosed || false == thrInfo->ctrlThrClosed)
 	{
 		pthread_cond_wait(&thrInfo->closed, &thrInfo->condMutex);
 	}
+	pthread_attr_destroy(&thrInfo->thrAttr);
+	pthread_mutex_destroy(&thrInfo->thrMutex);
+	pthread_mutex_destroy(&thrInfo->condMutex);
+	pthread_cond_destroy(&thrInfo->closed);
+	sem_destroy(&thrInfo->tskSem);
+	sem_destroy(&thrInfo->maxTskSem);
 	for (int i = 0; i < thrInfo->tskNum; i++)
 	{
-		free(thrInfo->tskArr[(thrInfo->maxTskNum + thrInfo->firstTskNum + i) % thrInfo->maxTskNum]);
+		__Task*& task =
+			thrInfo->tskArr[(thrInfo->firstTskNum + i) % thrInfo->maxTskNum];
+		if (0 != task) free(task);
 	}
 	free(thrInfo->tskArr);
 	free(thrInfo->thrArr);
@@ -83,41 +91,34 @@ int ThreadLoop::addTsk(void(*proc)(const pthread_t &thrId, const TaskId &tskId, 
 	cout << __FUNCTION__ << endl;
 #endif // __DEBUG
 
+	if (thrInfo->isClose) return -1;
 
 	__Task* task = (__Task*)malloc(sizeof(__Task));
 	task->tskId = tskId++;
 	task->proc = proc;
 	task->arg = arg;
 
-	while (thrInfo->maxTskNum <= thrInfo->tskNum)
-	{
-		cout << "addTask wait" << endl;
-		//pthread_mutex_unlock(&thrInfo->thrMutex);
-		pthread_cond_wait(&thrInfo->notFull, &thrInfo->condMutex);
-		//pthread_mutex_lock(&thrInfo->thrMutex);
-	}
+	sem_wait(&thrInfo->maxTskSem);
 
 	pthread_mutex_lock(&thrInfo->thrMutex);
-
-
-	thrInfo->tskArr[(thrInfo->maxTskNum + thrInfo->firstTskNum + thrInfo->tskNum) % thrInfo->maxTskNum] = task;
+	thrInfo->tskArr[(thrInfo->firstTskNum + thrInfo->tskNum) % thrInfo->maxTskNum] = task;
 	++thrInfo->tskNum;
-	int signalThrNum = thrInfo->thrNum - thrInfo->jobThrNum;
-	//cout << "thrNum : " << thrInfo->thrNum << endl;
-	//cout << "jobThrNum : " << thrInfo->jobThrNum << endl;
-	//cout << "signalThrNum : " << signalThrNum << endl;
- 	int tskNum = thrInfo->tskNum;
-	//cout << "tskNum : " << tskNum << endl;
 	pthread_mutex_unlock(&thrInfo->thrMutex);
-	pthread_cond_broadcast(&thrInfo->notEmpty);
+	
+	sem_post(&thrInfo->tskSem);
+}
 
-	//for (int i = 0; i < (signalThrNum < tskNum ? signalThrNum : tskNum); i++)
-	//{
-	//	//cout << "addTask signal" << endl;
-	//	pthread_cond_signal(&thrInfo->notEmpty);
-	//	//cout << "addTask signal ok" << endl;
-	//}
+void ThreadLoop::closeThrLoop()
+{
+	int thrNum = thrInfo->thrNum;
+	thrInfo->isClose = true;
 
+	for (int i = 0; i < thrNum; i++)
+	{
+		sem_post(&thrInfo->tskSem);
+	}
+
+	this->~ThreadLoop();
 }
 
 void * ThreadLoop::thrProc(void * arg)
@@ -135,63 +136,62 @@ void * ThreadLoop::thrProc(void * arg)
 	{
 		__Task* task;
 
-		while (0 == thrInfo->tskNum && !thrInfo->isClose)
-		{
-			cout << "thrProc wait " << endl;
-			//pthread_mutex_unlock(&thrInfo->thrMutex);
-			//cout << "unlock ok" << endl;
-			pthread_cond_wait(&thrInfo->notEmpty, &thrInfo->condMutex);
-			//usleep(1);
-			//cout << "wait ok" << endl;
-			//pthread_mutex_lock(&thrInfo->thrMutex);
-			//cout << "lock ok" << endl;
-		}
+		if (!thrInfo->isClose)
+			sem_wait(&thrInfo->tskSem);
 
 		pthread_mutex_lock(&thrInfo->thrMutex);
-		//cout << "thrProc lock1 ok" << endl;
 		++thrInfo->jobThrNum;
-	
-		if (thrInfo->tskNum)
-		{
-			--thrInfo->tskNum;
-			task = thrInfo->tskArr[thrInfo->firstTskNum];
-			//__PDEBUG(thrInfo->firstTskNum);
-			thrInfo->tskArr[thrInfo->firstTskNum] = 0;
-			thrInfo->firstTskNum =
-				(thrInfo->maxTskNum + thrInfo->firstTskNum + 1) % 
-				thrInfo->maxTskNum;
-			//__PDEBUG(thrInfo->firstTskNum);
-		}
-
 		if (thrInfo->isClose)
 		{
 			--thrInfo->thrNum;
 			if (0 == thrInfo->thrNum)
 			{
+				cout << "all thr closed" << endl;
 				thrInfo->thrClosed = true;
-				pthread_cond_signal(&thrInfo->closed);
 			}
 			pthread_mutex_unlock(&thrInfo->thrMutex);
+			pthread_cond_signal(&thrInfo->closed);
 			pthread_exit(NULL);
 		}
-
-		pthread_mutex_unlock(&thrInfo->thrMutex);
-		//cout << "thrProc unlock1 ok" << endl;
-
-		task->proc(pthread_self(), task->tskId, task->arg);
-	
-		pthread_mutex_lock(&thrInfo->thrMutex);
-		//cout << "thrProc lock2 ok" << endl;
-		--thrInfo->jobThrNum;
-		pthread_mutex_unlock(&thrInfo->thrMutex);
-		//cout << "thrProc unlock2 ok" << endl;
-
-		pthread_cond_signal(&thrInfo->notFull);
-		if (0 != thrInfo->tskNum &&
-			thrInfo->thrNum != thrInfo->jobThrNum)
+		if (thrInfo->tskNum)
 		{
-			cout << "broadcast notEmpty" << endl;
-			pthread_cond_broadcast(&thrInfo->notEmpty);
+			--thrInfo->tskNum;
+			task = thrInfo->tskArr[thrInfo->firstTskNum];
+			thrInfo->tskArr[thrInfo->firstTskNum] = 0;
+			thrInfo->firstTskNum =
+				(thrInfo->maxTskNum + thrInfo->firstTskNum + 1) % 
+				thrInfo->maxTskNum;
+		}
+		pthread_mutex_unlock(&thrInfo->thrMutex);
+
+		sem_post(&thrInfo->maxTskSem);
+
+		printf("[%d]\n", thrInfo->thrNum);
+		task->proc(pthread_self(), task->tskId, task->arg);
+		free(task);
+
+		pthread_mutex_lock(&thrInfo->thrMutex);
+		--thrInfo->jobThrNum;
+		if (0 == thrInfo->varyThrNum)
+			pthread_mutex_unlock(&thrInfo->thrMutex);
+		else if (0 > thrInfo->varyThrNum)
+		{
+			thrInfo->varyThrNum++;
+			thrInfo->thrNum--;
+			pthread_mutex_lock(&thrInfo->thrMutex);
+			pthread_exit(NULL);
+		}
+		else
+		{
+			int vary = thrInfo->varyThrNum;
+			int thrNum = thrInfo->thrNum;
+			thrInfo->varyThrNum = 0;
+			thrInfo->thrNum += vary;
+			pthread_mutex_lock(&thrInfo->thrMutex);
+			for (int i = 0; i < vary; i++)
+			{
+				pthread_create(thrInfo->thrArr + thrNum + i, &thrInfo->thrAttr, thrProc, thrInfo);
+			}
 		}
 
 	}
@@ -211,12 +211,21 @@ void * ThreadLoop::ctrlThrProc(void * arg)
 
 	while (true)
 	{
+		sleep(CTRL_TIMEOUT);
+		if (thrInfo->isClose)
+		{
+			thrInfo->ctrlThrClosed = true;
+			pthread_cond_signal(&thrInfo->closed);
+			pthread_exit(NULL);
+		}
+
+		pthread_mutex_lock(&thrInfo->thrMutex);
+
+		thrInfo->varyThrNum += ctrlNum(arg);
+
+		pthread_mutex_unlock(&thrInfo->thrMutex);
 
 	}
-	//pthread_mutex_lock(&thrInfo->thrMutex);
-
-
-	//pthread_mutex_unlock(&thrInfo->thrMutex);
 
 	return nullptr;
 }
@@ -246,4 +255,30 @@ void ThreadLoop::initTskThr(const ThrSize & minThrNum, const ThrSize & maxThrNum
 
 	if (0 == minThrNum) thrInfo->minThrNum = 1;
 	if (0 == maxThrNum) thrInfo->maxThrNum = 1;
+}
+
+int ThreadLoop::ctrlNum(void* const& arg)
+{
+	__ThreadInfo* thrInfo = (__ThreadInfo*)arg;
+
+	if (thrInfo->tskNum < thrInfo->minThrNum)
+		return thrInfo->minThrNum - thrInfo->thrNum;
+	else if (thrInfo->tskNum > thrInfo->maxThrNum)
+		return thrInfo->maxThrNum - thrInfo->thrNum;
+	else if (thrInfo->thrNum > 3 * thrInfo->tskNum / 2)
+	{
+		return 
+			thrInfo->thrNum / 2 > thrInfo->minThrNum ? 
+			thrInfo->thrNum / 2 : thrInfo->minThrNum -
+			thrInfo->thrNum;
+	}
+	else if (3 * thrInfo->thrNum / 2 < thrInfo->tskNum)
+	{
+		return
+			thrInfo->thrNum * 2 < thrInfo->maxThrNum ?
+			thrInfo->thrNum * 2 : thrInfo->maxThrNum -
+			thrInfo->thrNum;
+	}
+
+	return 0;
 }
