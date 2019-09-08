@@ -20,9 +20,9 @@ void proc(
 
 int main()
 {
-	ThreadLoop tl;
+	ThreadLoop tl(2,20,30);
 
-	for (int i = 0; i < 50; i++)
+	for (int i = 0; i < 100; i++)
 	{
 		tl.addTsk(proc, NULL);
 	}

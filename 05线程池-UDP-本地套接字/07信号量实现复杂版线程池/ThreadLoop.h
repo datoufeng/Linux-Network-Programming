@@ -9,7 +9,7 @@ typedef ThrSize TaskId;
 constexpr ThrSize DEFAULT_MIN_THR_NUM = 5;
 constexpr ThrSize DEFAULT_MAX_THR_NUM = 10;
 constexpr ThrSize DEFAULT_MAX_TSK_NUM = 20;
-constexpr ThrSize CTRL_TIMEOUT = 5;
+constexpr ThrSize CTRL_TIMEOUT = 1;
 
 class ThreadLoop
 {
@@ -30,7 +30,7 @@ class ThreadLoop
 		ThrSize maxTskNum;
 
 		ThrSize jobThrNum;
-		ThrSize varyThrNum;
+		int varyThrNum;
 		ThrSize thrNum;
 		
 		ThrSize firstTskNum;
@@ -38,6 +38,7 @@ class ThreadLoop
 
 		pthread_t ctrlThr;
 		pthread_t* thrArr;
+		//ThrSize* thrIndexArr;
 		pthread_attr_t thrAttr;
 		__Task** tskArr;
 
@@ -55,6 +56,11 @@ class ThreadLoop
 		sem_t tskSem;
 		sem_t maxTskSem;
 	};
+	//struct __ThrArg
+	//{
+	//	int thrIndex;
+	//	__ThreadInfo* thrInfo;
+	//};
 public:
 	ThreadLoop(
 		const ThrSize& minThrNum = DEFAULT_MIN_THR_NUM,
@@ -83,5 +89,9 @@ private:
 		const ThrSize& maxThrNum,
 		const ThrSize& maxTskNum);
 	static int ctrlNum(void* const& arg);
+	static int getThrIndex(
+		const pthread_t& thrId, 
+		pthread_t* const & thrArr,
+		const ThrSize& thrNum);
 };
 
