@@ -17,6 +17,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "06复杂版线程池", "06�
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "07信号量实现复杂版线程池", "07信号量实现复杂版线程池\07信号量实现复杂版线程池.vcxproj", "{153DF86A-4B5F-4474-BFAA-A0C41F3C1439}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "08epoll反应堆线程池", "08epoll反应堆线程池\08epoll反应堆线程池.vcxproj", "{8315322F-66A6-4750-88B2-88E4A8F4FBCF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM = Debug|ARM
@@ -141,6 +143,22 @@ Global
 		{153DF86A-4B5F-4474-BFAA-A0C41F3C1439}.Release|x64.Build.0 = Release|x64
 		{153DF86A-4B5F-4474-BFAA-A0C41F3C1439}.Release|x86.ActiveCfg = Release|x86
 		{153DF86A-4B5F-4474-BFAA-A0C41F3C1439}.Release|x86.Build.0 = Release|x86
+		{8315322F-66A6-4750-88B2-88E4A8F4FBCF}.Debug|ARM.ActiveCfg = Debug|ARM
+		{8315322F-66A6-4750-88B2-88E4A8F4FBCF}.Debug|ARM.Build.0 = Debug|ARM
+		{8315322F-66A6-4750-88B2-88E4A8F4FBCF}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{8315322F-66A6-4750-88B2-88E4A8F4FBCF}.Debug|ARM64.Build.0 = Debug|ARM64
+		{8315322F-66A6-4750-88B2-88E4A8F4FBCF}.Debug|x64.ActiveCfg = Debug|x64
+		{8315322F-66A6-4750-88B2-88E4A8F4FBCF}.Debug|x64.Build.0 = Debug|x64
+		{8315322F-66A6-4750-88B2-88E4A8F4FBCF}.Debug|x86.ActiveCfg = Debug|x86
+		{8315322F-66A6-4750-88B2-88E4A8F4FBCF}.Debug|x86.Build.0 = Debug|x86
+		{8315322F-66A6-4750-88B2-88E4A8F4FBCF}.Release|ARM.ActiveCfg = Release|ARM
+		{8315322F-66A6-4750-88B2-88E4A8F4FBCF}.Release|ARM.Build.0 = Release|ARM
+		{8315322F-66A6-4750-88B2-88E4A8F4FBCF}.Release|ARM64.ActiveCfg = Release|ARM64
+		{8315322F-66A6-4750-88B2-88E4A8F4FBCF}.Release|ARM64.Build.0 = Release|ARM64
+		{8315322F-66A6-4750-88B2-88E4A8F4FBCF}.Release|x64.ActiveCfg = Release|x64
+		{8315322F-66A6-4750-88B2-88E4A8F4FBCF}.Release|x64.Build.0 = Release|x64
+		{8315322F-66A6-4750-88B2-88E4A8F4FBCF}.Release|x86.ActiveCfg = Release|x86
+		{8315322F-66A6-4750-88B2-88E4A8F4FBCF}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

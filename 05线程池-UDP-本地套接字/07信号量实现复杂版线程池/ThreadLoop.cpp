@@ -79,7 +79,7 @@ ThreadLoop::~ThreadLoop()
 	pthread_cond_destroy(&thrInfo->closed);
 	sem_destroy(&thrInfo->tskSem);
 	sem_destroy(&thrInfo->maxTskSem);
-	cout << "free" << endl;
+	//cout << "free" << endl;
 	for (int i = 0; i < thrInfo->tskNum; i++)
 	{
 		__Task*& task =
@@ -142,13 +142,7 @@ void * ThreadLoop::thrProc(void * arg)
 #endif // __DEBUG
 
 	__ThreadInfo* thrInfo = (__ThreadInfo*)arg;
-	int thrIndex = getThrIndex(pthread_self(), thrInfo->thrArr, thrInfo->thrNum);
-	if (-1 == thrIndex)
-	{
-		cout << "create thread err" << endl;
-		return NULL;
-	}
-	//cout << "thrIndex : " << thrIndex << endl;
+
 
 	while (true)
 	{
@@ -195,6 +189,13 @@ void * ThreadLoop::thrProc(void * arg)
 			pthread_mutex_unlock(&thrInfo->thrMutex);
 		else if (0 > thrInfo->varyThrNum)
 		{
+			int thrIndex = getThrIndex(pthread_self(), thrInfo->thrArr, thrInfo->thrNum);
+			if (-1 == thrIndex)
+			{
+				cout << "create thread err" << endl;
+				return NULL;
+			}
+			printf("thrIndex[%d], thrId[%x]\n", thrIndex, pthread_self());
 			++thrInfo->varyThrNum;
 			--thrInfo->thrNum;
 			thrInfo->thrArr[thrIndex] = 
