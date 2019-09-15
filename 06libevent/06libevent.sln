@@ -15,6 +15,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "05libeventUDP服务端", "0
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "06libeventUDP客户端", "06libeventUDP客户端\06libeventUDP客户端.vcxproj", "{AB97BA27-9552-472E-A9F0-9A5A39EC0952}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "07bufferevent和信号处理", "07bufferevent和信号处理\07bufferevent和信号处理.vcxproj", "{0A514B28-23E5-48B6-AB0B-CA824D865523}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM = Debug|ARM
@@ -123,6 +125,22 @@ Global
 		{AB97BA27-9552-472E-A9F0-9A5A39EC0952}.Release|x64.Build.0 = Release|x64
 		{AB97BA27-9552-472E-A9F0-9A5A39EC0952}.Release|x86.ActiveCfg = Release|x86
 		{AB97BA27-9552-472E-A9F0-9A5A39EC0952}.Release|x86.Build.0 = Release|x86
+		{0A514B28-23E5-48B6-AB0B-CA824D865523}.Debug|ARM.ActiveCfg = Debug|ARM
+		{0A514B28-23E5-48B6-AB0B-CA824D865523}.Debug|ARM.Build.0 = Debug|ARM
+		{0A514B28-23E5-48B6-AB0B-CA824D865523}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{0A514B28-23E5-48B6-AB0B-CA824D865523}.Debug|ARM64.Build.0 = Debug|ARM64
+		{0A514B28-23E5-48B6-AB0B-CA824D865523}.Debug|x64.ActiveCfg = Debug|x64
+		{0A514B28-23E5-48B6-AB0B-CA824D865523}.Debug|x64.Build.0 = Debug|x64
+		{0A514B28-23E5-48B6-AB0B-CA824D865523}.Debug|x86.ActiveCfg = Debug|x86
+		{0A514B28-23E5-48B6-AB0B-CA824D865523}.Debug|x86.Build.0 = Debug|x86
+		{0A514B28-23E5-48B6-AB0B-CA824D865523}.Release|ARM.ActiveCfg = Release|ARM
+		{0A514B28-23E5-48B6-AB0B-CA824D865523}.Release|ARM.Build.0 = Release|ARM
+		{0A514B28-23E5-48B6-AB0B-CA824D865523}.Release|ARM64.ActiveCfg = Release|ARM64
+		{0A514B28-23E5-48B6-AB0B-CA824D865523}.Release|ARM64.Build.0 = Release|ARM64
+		{0A514B28-23E5-48B6-AB0B-CA824D865523}.Release|x64.ActiveCfg = Release|x64
+		{0A514B28-23E5-48B6-AB0B-CA824D865523}.Release|x64.Build.0 = Release|x64
+		{0A514B28-23E5-48B6-AB0B-CA824D865523}.Release|x86.ActiveCfg = Release|x86
+		{0A514B28-23E5-48B6-AB0B-CA824D865523}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
